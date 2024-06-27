@@ -4,7 +4,6 @@
 #include <numbers>
 
 
-
 struct Sphere {
 	Vector3 center;  //!< 中心点
 	float radius;    //!< 半径
@@ -24,6 +23,12 @@ struct Segment {
 	Vector3 origin;  //!< 始点
 	Vector3 diff;    //!< 終点への差分ベクトル
 };
+
+struct Plane {
+	Vector3 normal;  //!< 法線 
+	float distance;  //!< 距離
+};
+
 
 //===========================================  表示  ==============================================
 
@@ -46,7 +51,15 @@ void MatrixScreenPrintf(int x, int y, const Matrix4x4& matrix) {
 //=================================================================================================
 
 
-//======================================  ベクトルの減算  =========================================
+//======================================  ベクトルの加算  =========================================
+Vector3 AddVector(const Vector3& v1, const Vector3& v2) {
+	Vector3 result;
+	result = { v1.x + v2.x, v1.y + v2.y, v1.z + v2.z };
+	return result;
+}
+//=================================================================================================
+
+//=======================================  ベクトルの減算  ==========================================
 Vector3 SubtractVector(const Vector3& v1, const Vector3& v2) {
 	Vector3 result;
 	result = { v1.x - v2.x, v1.y - v2.y, v1.z - v2.z };
@@ -54,12 +67,31 @@ Vector3 SubtractVector(const Vector3& v1, const Vector3& v2) {
 }
 //=================================================================================================
 
-
-//======================================  ベクトルの加算  =========================================
-Vector3 AddVector(const Vector3& v1, const Vector3& v2) {
+//=================================================================================================
+Vector3 MultiplyVector(const float& k, const Vector3& v) {
 	Vector3 result;
-	result = { v1.x + v2.x, v1.y + v2.y, v1.z + v2.z };
+	result = { k * v.x, k * v.y, k * v.z };
 	return result;
+}
+//=================================================================================================
+
+
+//===========================================  正規化  =============================================
+Vector3 Normalize(const Vector3& vector) {
+	Vector3 result;
+	float length = std::sqrtf(vector.x * vector.x + vector.y * vector.y + vector.z * vector.z);
+	float mag = 1 / length;
+	result = { vector.x * mag, vector.y * mag, vector.z * mag };
+	return result;
+}
+//=================================================================================================
+
+//========================================  垂直なベクトル  =========================================
+Vector3 Perpendicular(const Vector3& vector) {
+	if (vector.x != 0.0f || vector.y != 0.0f) {
+		return { -vector.y, vector.x, 0.0f };
+	}
+	return { 0.0f, -vector.z, vector.y };
 }
 //=================================================================================================
 
@@ -111,7 +143,7 @@ void DrawGrid(const Matrix4x4& viewProjectionMatrix, const Matrix4x4& viewportMa
 //=================================================================================================
 
 
-//=======================================  スフィア生成  ==========================================
+//=======================================  スフィア描画  ==========================================
 void DrawSphere(const Sphere& sphere, const Matrix4x4& viewProjectionMatrix, const Matrix4x4& viewportMatrix, uint32_t color) {
 	const uint32_t kSubdivision = 12;
 	const float kLonEvery = 2 * std::numbers::pi_v<float> / kSubdivision;  // 経度
@@ -173,4 +205,47 @@ Vector3 ClosestPoint(const Vector3& point, const Segment& segment) {
 	result = { segment.origin.x + tb.x, segment.origin.y + tb.y, segment.origin.z + tb.z };
 	return result;
 }
+//=================================================================================================
+
+
+//=========================================  衝突判定  =============================================
+
+bool IsCollision(const Sphere& s1, const Sphere& s2) {
+	bool result = false;
+	float x = (s2.center.x - s1.center.x) * (s2.center.x - s1.center.x);
+	float y = (s2.center.y - s1.center.y) * (s2.center.y - s1.center.y);
+	float z = (s2.center.z - s1.center.z) * (s2.center.z - s1.center.z);
+
+	if (s1.radius + s2.radius >= sqrtf(x + y + z)) {
+		result = true;
+	}
+	return result;
+}
+
+//=================================================================================================
+
+
+//=========================================  平面描画  =============================================
+
+void DrawPlane(const Plane& plane, const Matrix4x4& viewProjectionMatrix, const Matrix4x4& viewportMatrix, uint32_t color) {
+	Vector3 center = MultiplyVector(plane.distance, plane.normal);  // 1
+	Vector3 perpendiculars[4];
+	perpendiculars[0] = Normalize(Perpendicular(plane.normal));  // 2
+	perpendiculars[1] = { -perpendiculars[0].x, -perpendiculars[0].y, -perpendiculars[0].z };  // 3
+	perpendiculars[2] = Cross(plane.normal, perpendiculars[0]);  // 4
+	perpendiculars[3] = { -perpendiculars[2].x, -perpendiculars[2].y, -perpendiculars[2].z };  // 5
+	// 6
+	Vector3 points[4];
+	for (int32_t index = 0; index < 4; ++index) {
+		Vector3 extend = MultiplyVector(2.0f, perpendiculars[index]);
+		Vector3 point = AddVector(center, extend);
+		points[index] = Transform(Transform(point, viewProjectionMatrix), viewportMatrix);
+	}
+
+	Novice::DrawLine(int(points[0].x), int(points[0].y), int(points[2].x), int(points[2].y), color);
+	Novice::DrawLine(int(points[0].x), int(points[0].y), int(points[3].x), int(points[3].y), color);
+	Novice::DrawLine(int(points[2].x), int(points[2].y), int(points[1].x), int(points[1].y), color);
+	Novice::DrawLine(int(points[3].x), int(points[3].y), int(points[1].x), int(points[1].y), color);
+}
+
 //=================================================================================================

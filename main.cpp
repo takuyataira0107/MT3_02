@@ -21,6 +21,15 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	const int kWindowWidth = 1280;
 	const int kWindowHeight = 720;
 
+	Sphere sphere = {
+		{0.0f, 0.0f, 0.0f},
+		0.6f
+	};
+
+	Plane plane = {
+		{0.0f, 1.0f, 0.0f},
+		1.0f
+	};
 
 	// ウィンドウの×ボタンが押されるまでループ
 	while (Novice::ProcessMessage() == 0) {
@@ -64,6 +73,11 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		// グリッド線の描画
 		DrawGrid(viewProjectionMatrix, viewportMatrix);
 		
+		// 球を描画
+		DrawSphere(sphere, viewProjectionMatrix, viewportMatrix, WHITE);
+		
+		// 平面の描画
+		DrawPlane(plane, viewProjectionMatrix, viewportMatrix, WHITE);
 
 		///
 		/// ↑描画処理ここまで
