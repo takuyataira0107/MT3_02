@@ -20,7 +20,18 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	Vector3 cameraTranslate = { 0.0f, 1.9f, -6.49f };
 	const int kWindowWidth = 1280;
 	const int kWindowHeight = 720;
+	
+	Sphere sphere[2];
 
+	sphere[0] = {
+		{0.0f, 0.2f, 0.1f},
+		0.1f
+	};
+
+	sphere[1] = {
+		{-0.6f, -0.6f, 0.6f},
+		0.6f
+	};
 
 	// ウィンドウの×ボタンが押されるまでループ
 	while (Novice::ProcessMessage() == 0) {
@@ -64,6 +75,21 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		// グリッド線の描画
 		DrawGrid(viewProjectionMatrix, viewportMatrix);
 		
+		// Sphereの描画
+		DrawSphere(sphere[0], viewProjectionMatrix, viewportMatrix, WHITE);
+		if (IsCollision(sphere[0], sphere[1])) {
+			DrawSphere(sphere[0], viewProjectionMatrix, viewportMatrix, RED);
+		}
+		DrawSphere(sphere[1], viewProjectionMatrix, viewportMatrix, WHITE);
+
+
+		// ImGui
+		ImGui::Begin("Window");
+		ImGui::DragFloat3("Sphere[0].Center", &sphere[0].center.x, 0.01f);
+		ImGui::DragFloat("Sphere[0].Radius", &sphere[0].radius, 0.01f);
+		ImGui::DragFloat3("Sphere[1].Center", &sphere[1].center.x, 0.01f);
+		ImGui::DragFloat("Sphere[1].Radius", &sphere[1].radius, 0.01f);
+		ImGui::End();
 
 		///
 		/// ↑描画処理ここまで

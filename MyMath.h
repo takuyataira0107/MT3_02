@@ -113,7 +113,7 @@ void DrawGrid(const Matrix4x4& viewProjectionMatrix, const Matrix4x4& viewportMa
 
 //=======================================  スフィア生成  ==========================================
 void DrawSphere(const Sphere& sphere, const Matrix4x4& viewProjectionMatrix, const Matrix4x4& viewportMatrix, uint32_t color) {
-	const uint32_t kSubdivision = 12;
+	const uint32_t kSubdivision = 16;
 	const float kLonEvery = 2 * std::numbers::pi_v<float> / kSubdivision;  // 経度
 	const float kLatEvery = std::numbers::pi_v<float> / kSubdivision;      // 緯度
 	// 緯度の方向に分割 -π/2 ～ π/2
@@ -125,21 +125,21 @@ void DrawSphere(const Sphere& sphere, const Matrix4x4& viewProjectionMatrix, con
 			// world座標系でのa,b,cを求める
 			Vector3 a, b, c;
 			a = {
-				sphere.radius * (std::cos(lat) * std::cos(lon)) + sphere.center.x,
-				sphere.radius * std::sin(lat) + sphere.center.y,
-				sphere.radius * (std::cos(lat) * std::sin(lon)) + sphere.center.z
+				sphere.radius * (std::cosf(lat) * std::cosf(lon)) + sphere.center.x,
+				sphere.radius * std::sinf(lat) + sphere.center.y,
+				sphere.radius * (std::cosf(lat) * std::sinf(lon)) + sphere.center.z
 			};
 
 			b = {
-				sphere.radius * (std::cos(lat + kLatEvery) * std::cos(lon)) + sphere.center.x,
-				sphere.radius * std::sin(lat + kLatEvery) + sphere.center.y,
-				sphere.radius * (std::cos(lat + kLatEvery) * std::sin(lon)) + sphere.center.z
+				sphere.radius * (std::cosf(lat + kLatEvery) * std::cosf(lon)) + sphere.center.x,
+				sphere.radius * std::sinf(lat + kLatEvery) + sphere.center.y,
+				sphere.radius * (std::cosf(lat + kLatEvery) * std::sinf(lon)) + sphere.center.z
 			};
 
 			c = {
-				sphere.radius * (std::cos(lat) * std::cos(lon + kLonEvery)) + sphere.center.x,
-				sphere.radius * std::sin(lat) + sphere.center.y,
-				sphere.radius * (std::cos(lat) * std::sin(lon + kLonEvery)) + sphere.center.z
+				sphere.radius * (std::cosf(lat) * std::cosf(lon + kLonEvery)) + sphere.center.x,
+				sphere.radius * std::sinf(lat) + sphere.center.y,
+				sphere.radius * (std::cosf(lat) * std::sinf(lon + kLonEvery)) + sphere.center.z
 			};
 
 			// a,b,cをScreen座標系まで変換...
@@ -166,7 +166,7 @@ Vector3 Project(const Vector3& v1, const Vector3& v2) {
 //=================================================================================================
 
 
-//=========================================  最近接点  ============================================
+//=========================================  最近接点  =============================================
 Vector3 ClosestPoint(const Vector3& point, const Segment& segment) {
 	Vector3 result;
 	Vector3 tb = Project(SubtractVector(point, segment.origin), segment.diff);
@@ -174,3 +174,21 @@ Vector3 ClosestPoint(const Vector3& point, const Segment& segment) {
 	return result;
 }
 //=================================================================================================
+
+
+//=========================================  衝突判定  =============================================
+
+bool IsCollision(const Sphere& s1, const Sphere& s2) {
+	bool result = false;
+	float x = (s2.center.x - s1.center.x) * (s2.center.x - s1.center.x);
+	float y = (s2.center.y - s1.center.y) * (s2.center.y - s1.center.y);
+	float z = (s2.center.z - s1.center.z) * (s2.center.z - s1.center.z);
+	
+	if (s1.radius + s2.radius >= sqrtf(x + y + z)) {
+		result = true;
+	}
+	return result;
+}
+
+//=================================================================================================
+
