@@ -198,7 +198,7 @@ Vector3 Project(const Vector3& v1, const Vector3& v2) {
 //=================================================================================================
 
 
-//=========================================  最近接点  ============================================
+//=========================================  最近接点  =============================================
 Vector3 ClosestPoint(const Vector3& point, const Segment& segment) {
 	Vector3 result;
 	Vector3 tb = Project(SubtractVector(point, segment.origin), segment.diff);
@@ -208,9 +208,8 @@ Vector3 ClosestPoint(const Vector3& point, const Segment& segment) {
 //=================================================================================================
 
 
-//=========================================  衝突判定  =============================================
-
-bool IsCollision(const Sphere& s1, const Sphere& s2) {
+//======================================  球同士の衝突判定  ==========================================
+bool IsCollisionSphere(const Sphere& s1, const Sphere& s2) {
 	bool result = false;
 	float x = (s2.center.x - s1.center.x) * (s2.center.x - s1.center.x);
 	float y = (s2.center.y - s1.center.y) * (s2.center.y - s1.center.y);
@@ -221,12 +220,30 @@ bool IsCollision(const Sphere& s1, const Sphere& s2) {
 	}
 	return result;
 }
+//=================================================================================================
 
+//=====================================  球と平面の衝突判定  =========================================
+bool IsCollisionPlane(const Sphere& sphere, const Plane& plane) {
+	bool result = false;
+	
+	
+	float x = plane.normal.x - sphere.center.x * plane.normal.x - sphere.center.x * plane.normal.x - sphere.center.x;
+	float y = plane.normal.y - sphere.center.y * plane.normal.y - sphere.center.y * plane.normal.y - sphere.center.y;
+	float z = plane.normal.z - sphere.center.z * plane.normal.z - sphere.center.z * plane.normal.z - sphere.center.z;
+	
+	float ncDot = plane.normal.x * sphere.center.x + plane.normal.y * sphere.center.y + plane.normal.z * sphere.center.z;
+	float d = plane.normal.x * plane.distance + plane.normal.y * plane.distance + plane.normal.z * plane.distance;
+	float k = fabs(ncDot - d);
+	if (k <= sqrtf(x + y + z)) {
+		result = true;
+	}
+
+	return result;
+}
 //=================================================================================================
 
 
 //=========================================  平面描画  =============================================
-
 void DrawPlane(const Plane& plane, const Matrix4x4& viewProjectionMatrix, const Matrix4x4& viewportMatrix, uint32_t color) {
 	Vector3 center = MultiplyVector(plane.distance, plane.normal);  // 1
 	Vector3 perpendiculars[4];
@@ -247,5 +264,4 @@ void DrawPlane(const Plane& plane, const Matrix4x4& viewProjectionMatrix, const 
 	Novice::DrawLine(int(points[2].x), int(points[2].y), int(points[1].x), int(points[1].y), color);
 	Novice::DrawLine(int(points[3].x), int(points[3].y), int(points[1].x), int(points[1].y), color);
 }
-
 //=================================================================================================
