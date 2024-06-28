@@ -22,11 +22,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	const int kWindowWidth = 1280;
 	const int kWindowHeight = 720;
 
-	Sphere sphere = {
-		{0.0f, 0.0f, 0.0f},
-		0.6f
-	};
-
 	Plane plane = {
 		{0.0f, 1.0f, 0.0f},
 		1.0f
@@ -74,11 +69,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		// グリッド線の描画
 		DrawGrid(viewProjectionMatrix, viewportMatrix);
 		
-		// 球を描画
-		DrawSphere(sphere, viewProjectionMatrix, viewportMatrix, WHITE);
-		if (IsCollisionPlane(sphere, plane)) {
-			DrawSphere(sphere, viewProjectionMatrix, viewportMatrix, RED);
-		}
 		
 		// 平面の描画
 		DrawPlane(plane, viewProjectionMatrix, viewportMatrix, WHITE);
@@ -86,8 +76,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 		// ImGui
 		ImGui::Begin("Window");
-		ImGui::DragFloat3("Sphere.Center", &sphere.center.x, 0.01f);
-		ImGui::DragFloat("Sphere.Radius", &sphere.radius, 0.01f);
 		ImGui::DragFloat3("Plane.Normal", &plane.normal.x, 0.01f);
 		plane.normal = Normalize(plane.normal);
 		ImGui::DragFloat("Plane.Distance", &plane.distance, 0.01f);
