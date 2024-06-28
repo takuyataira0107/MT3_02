@@ -100,6 +100,15 @@ float DotFloat(const Vector3& vector, const float& a) {
 }
 //=================================================================================================
 
+//======================================  正射影ベクトル  =========================================
+Vector3 Project(const Vector3& v1, const Vector3& v2) {
+	Vector3 result;
+	float t = (v1.x * v2.x + v1.y * v2.y + v1.z * v2.z) / (std::sqrtf(v2.x * v2.x + v2.y * v2.y + v2.z * v2.z) * std::sqrtf(v2.x * v2.x + v2.y * v2.y + v2.z * v2.z));
+	result = { v2.x * t, v2.y * t, v2.z * t };
+	return result;
+}
+//=================================================================================================
+
 //========================================  垂直なベクトル  =========================================
 Vector3 Perpendicular(const Vector3& vector) {
 	if (vector.x != 0.0f || vector.y != 0.0f) {
@@ -109,8 +118,68 @@ Vector3 Perpendicular(const Vector3& vector) {
 }
 //=================================================================================================
 
+//=========================================  最近接点  =============================================
+Vector3 ClosestPoint(const Vector3& point, const Segment& segment) {
+	Vector3 result;
+	Vector3 tb = Project(SubtractVector(point, segment.origin), segment.diff);
+	result = { segment.origin.x + tb.x, segment.origin.y + tb.y, segment.origin.z + tb.z };
+	return result;
+}
+//=================================================================================================
 
-//=========================================  グリッド  ============================================
+
+//======================================  球同士の衝突判定  ==========================================
+bool IsCollisionSphere(const Sphere& s1, const Sphere& s2) {
+	float x = (s2.center.x - s1.center.x) * (s2.center.x - s1.center.x);
+	float y = (s2.center.y - s1.center.y) * (s2.center.y - s1.center.y);
+	float z = (s2.center.z - s1.center.z) * (s2.center.z - s1.center.z);
+
+	if (s1.radius + s2.radius >= sqrtf(x + y + z)) {
+		return true;
+	}else {
+		return false;
+	}
+}
+//=================================================================================================
+
+//=====================================  球と平面の衝突判定  =========================================
+bool IsCollisionPlane(const Sphere& sphere, const Plane& plane) {
+	float d = DotFloat(plane.normal, plane.distance);
+	float k = fabs(Dot(plane.normal, sphere.center) - d);
+
+	if (k <= sphere.radius) {
+		return true;
+	}else {
+		return false;
+	}
+}
+//=================================================================================================
+
+//=====================================  線と平面の衝突判定  =========================================
+bool IsCollisionSegment(const Segment& segment, const Plane& plane) {
+	// まず垂直判定を行うために、法線と線の内積を求める
+	float dot = Dot(plane.normal, segment.diff);
+
+	// 垂直=平行であるので、衝突しているはずがない
+	if (dot == 0.0f) {
+		return false;
+	}
+
+	// tを求める
+	float t = (plane.distance - Dot(segment.origin, plane.normal)) / dot;
+
+	// tの値と線の種類によって衝突しているかを判断する
+	if (t == 0) {
+		return true;
+	}
+	else {
+		return false;
+	}
+}
+//=================================================================================================
+
+
+//=========================================  グリッド  =============================================
 void DrawGrid(const Matrix4x4& viewProjectionMatrix, const Matrix4x4& viewportMatrix)
 {
 	const float kGridHalfWidth = 2.0f;                                       // Gridの半分の幅
@@ -156,7 +225,6 @@ void DrawGrid(const Matrix4x4& viewProjectionMatrix, const Matrix4x4& viewportMa
 }
 //=================================================================================================
 
-
 //=======================================  スフィア描画  ==========================================
 void DrawSphere(const Sphere& sphere, const Matrix4x4& viewProjectionMatrix, const Matrix4x4& viewportMatrix, uint32_t color) {
 	const uint32_t kSubdivision = 12;
@@ -201,54 +269,15 @@ void DrawSphere(const Sphere& sphere, const Matrix4x4& viewProjectionMatrix, con
 }
 //=================================================================================================
 
+//***
+//========================================  線分の描画  ============================================
+void DrawLineSegment(const Segment& segment, const Matrix4x4& viewProjectionMatrix, const Matrix4x4& viewportMatrix, int32_t color) {
+	Vector3 start = Transform(Transform(segment.origin, viewProjectionMatrix), viewportMatrix);
+	Vector3 end = Transform(Transform(AddVector(segment.origin, segment.diff), viewProjectionMatrix), viewportMatrix);
 
-//======================================  正射影ベクトル  =========================================
-Vector3 Project(const Vector3& v1, const Vector3& v2) {
-	Vector3 result;
-	float t = (v1.x * v2.x + v1.y * v2.y + v1.z * v2.z) / (std::sqrtf(v2.x * v2.x + v2.y * v2.y + v2.z * v2.z) * std::sqrtf(v2.x * v2.x + v2.y * v2.y + v2.z * v2.z));
-	result = { v2.x * t, v2.y * t, v2.z * t };
-	return result;
+	Novice::DrawLine(int(start.x), int(start.y), int(end.x), int(end.y), color);
 }
 //=================================================================================================
-
-
-//=========================================  最近接点  =============================================
-Vector3 ClosestPoint(const Vector3& point, const Segment& segment) {
-	Vector3 result;
-	Vector3 tb = Project(SubtractVector(point, segment.origin), segment.diff);
-	result = { segment.origin.x + tb.x, segment.origin.y + tb.y, segment.origin.z + tb.z };
-	return result;
-}
-//=================================================================================================
-
-
-//======================================  球同士の衝突判定  ==========================================
-bool IsCollisionSphere(const Sphere& s1, const Sphere& s2) {
-	bool result = false;
-	float x = (s2.center.x - s1.center.x) * (s2.center.x - s1.center.x);
-	float y = (s2.center.y - s1.center.y) * (s2.center.y - s1.center.y);
-	float z = (s2.center.z - s1.center.z) * (s2.center.z - s1.center.z);
-
-	if (s1.radius + s2.radius >= sqrtf(x + y + z)) {
-		result = true;
-	}
-	return result;
-}
-//=================================================================================================
-
-//=====================================  球と平面の衝突判定  =========================================
-bool IsCollisionPlane(const Sphere& sphere, const Plane& plane) {
-	bool result = false;
-	float d = DotFloat(plane.normal, plane.distance);
-	float k = fabs(Dot(plane.normal, sphere.center) - d);
-
-	if (k <= sphere.radius) {
-		result = true;
-	}
-	return result;
-}
-//=================================================================================================
-
 
 //=========================================  平面描画  =============================================
 void DrawPlane(const Plane& plane, const Matrix4x4& viewProjectionMatrix, const Matrix4x4& viewportMatrix, uint32_t color) {

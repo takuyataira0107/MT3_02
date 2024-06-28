@@ -22,6 +22,11 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	const int kWindowWidth = 1280;
 	const int kWindowHeight = 720;
 
+	Segment segment = {
+		{0.0f, 0.0f, 0.0f},
+		{0.5f, 0.5f, 0.5f}
+	};
+
 	Plane plane = {
 		{0.0f, 1.0f, 0.0f},
 		1.0f
@@ -69,7 +74,13 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		// グリッド線の描画
 		DrawGrid(viewProjectionMatrix, viewportMatrix);
 		
-		
+		// 線分の描画
+		if (IsCollisionSegment(segment, plane)) {
+			DrawLineSegment(segment, viewProjectionMatrix, viewportMatrix, RED);
+		}else {
+			DrawLineSegment(segment, viewProjectionMatrix, viewportMatrix, WHITE);
+		}
+
 		// 平面の描画
 		DrawPlane(plane, viewProjectionMatrix, viewportMatrix, WHITE);
 
@@ -79,6 +90,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		ImGui::DragFloat3("Plane.Normal", &plane.normal.x, 0.01f);
 		plane.normal = Normalize(plane.normal);
 		ImGui::DragFloat("Plane.Distance", &plane.distance, 0.01f);
+		ImGui::DragFloat3("Segment.Origin", &segment.origin.x, 0.01f);
+		ImGui::DragFloat3("Segment.Diff", &segment.diff.x, 0.01f);
 		ImGui::End();
 
 		///
