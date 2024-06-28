@@ -86,6 +86,20 @@ Vector3 Normalize(const Vector3& vector) {
 }
 //=================================================================================================
 
+//===========================================  内積  =============================================
+float Dot(const Vector3& v1, const Vector3& v2) {
+	float result;
+	result = v1.x * v2.x + v1.y * v2.y + v1.z * v2.z;
+	return result;
+}
+
+float DotFloat(const Vector3& vector, const float& a) {
+	float result;
+	result = vector.x * a + vector.y * a + vector.z * a;
+	return result;
+}
+//=================================================================================================
+
 //========================================  垂直なベクトル  =========================================
 Vector3 Perpendicular(const Vector3& vector) {
 	if (vector.x != 0.0f || vector.y != 0.0f) {
@@ -225,9 +239,9 @@ bool IsCollisionSphere(const Sphere& s1, const Sphere& s2) {
 //=====================================  球と平面の衝突判定  =========================================
 bool IsCollisionPlane(const Sphere& sphere, const Plane& plane) {
 	bool result = false;
-	float d = plane.normal.x * plane.distance + plane.normal.y * plane.distance + plane.normal.z * plane.distance;
-	float k = fabs((plane.normal.x * sphere.center.x + plane.normal.y * sphere.center.y + plane.normal.z * sphere.center.z) - d);
-	
+	float d = DotFloat(plane.normal, plane.distance);
+	float k = fabs(Dot(plane.normal, sphere.center) - d);
+
 	if (k <= sphere.radius) {
 		result = true;
 	}
