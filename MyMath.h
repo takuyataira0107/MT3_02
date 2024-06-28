@@ -225,19 +225,12 @@ bool IsCollisionSphere(const Sphere& s1, const Sphere& s2) {
 //=====================================  球と平面の衝突判定  =========================================
 bool IsCollisionPlane(const Sphere& sphere, const Plane& plane) {
 	bool result = false;
-	
-	
-	float x = plane.normal.x - sphere.center.x * plane.normal.x - sphere.center.x * plane.normal.x - sphere.center.x;
-	float y = plane.normal.y - sphere.center.y * plane.normal.y - sphere.center.y * plane.normal.y - sphere.center.y;
-	float z = plane.normal.z - sphere.center.z * plane.normal.z - sphere.center.z * plane.normal.z - sphere.center.z;
-	
-	float ncDot = plane.normal.x * sphere.center.x + plane.normal.y * sphere.center.y + plane.normal.z * sphere.center.z;
 	float d = plane.normal.x * plane.distance + plane.normal.y * plane.distance + plane.normal.z * plane.distance;
-	float k = fabs(ncDot - d);
-	if (k <= sqrtf(x + y + z)) {
+	float k = fabs((plane.normal.x * sphere.center.x + plane.normal.y * sphere.center.y + plane.normal.z * sphere.center.z) - d);
+	
+	if (k <= sphere.radius) {
 		result = true;
 	}
-
 	return result;
 }
 //=================================================================================================

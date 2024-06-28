@@ -16,6 +16,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	char preKeys[256] = { 0 };
 
 	// カメラの座標
+	Vector3 cameraPosition = { 1.0f, 1.0f, 1.0f };
 	Vector3 cameraRotate = { 0.26f, 0.0f, 0.0f };
 	Vector3 cameraTranslate = { 0.0f, 1.9f, -6.49f };
 	const int kWindowWidth = 1280;
@@ -49,7 +50,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		//========================================  ビュー関連  ===========================================
 		
 		// カメラ
-		Matrix4x4 cameraMatrix = MakeAffineMatrix({ 1.0f, 1.0f, 1.0f }, cameraRotate, cameraTranslate);
+		Matrix4x4 cameraMatrix = MakeAffineMatrix(cameraPosition, cameraRotate, cameraTranslate);
 		// ビュー
 		Matrix4x4 viewMatrix = Inverse(cameraMatrix);
 		// 透視投影
