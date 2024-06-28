@@ -224,30 +224,33 @@ Vector3 ClosestPoint(const Vector3& point, const Segment& segment) {
 
 //======================================  球同士の衝突判定  ==========================================
 bool IsCollisionSphere(const Sphere& s1, const Sphere& s2) {
-	bool result = false;
 	float x = (s2.center.x - s1.center.x) * (s2.center.x - s1.center.x);
 	float y = (s2.center.y - s1.center.y) * (s2.center.y - s1.center.y);
 	float z = (s2.center.z - s1.center.z) * (s2.center.z - s1.center.z);
 
 	if (s1.radius + s2.radius >= sqrtf(x + y + z)) {
-		result = true;
+		return true;
 	}
-	return result;
+	else {
+		return false;
+	}
 }
 //=================================================================================================
 
 //=====================================  球と平面の衝突判定  =========================================
 bool IsCollisionPlane(const Sphere& sphere, const Plane& plane) {
-	bool result = false;
 	float d = DotFloat(plane.normal, plane.distance);
 	float k = fabs(Dot(plane.normal, sphere.center) - d);
 
 	if (k <= sphere.radius) {
-		result = true;
+		return true;
 	}
-	return result;
+	else {
+		return false;
+	}
 }
 //=================================================================================================
+
 
 
 //=========================================  平面描画  =============================================
