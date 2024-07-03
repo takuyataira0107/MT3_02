@@ -162,14 +162,14 @@ bool IsCollisionSegment(const Segment& segment, const Plane& plane) {
 
 	// 垂直=平行であるので、衝突しているはずがない
 	if (dot == 0.0f) {
-		return false;
+		//return false;
 	}
 
 	// tを求める
 	float t = (plane.distance - Dot(segment.origin, plane.normal)) / dot;
 
 	// tの値と線の種類によって衝突しているかを判断する
-	if (t == 0) {
+	if (t >= 0 && t <= 1) {
 		return true;
 	}
 	else {
