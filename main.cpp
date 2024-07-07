@@ -16,7 +16,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	char preKeys[256] = { 0 };
 
 	// カメラの座標
-	Vector3 cameraPosition = { 1.0f, 1.0f, 1.0f };
+	Vector3 cameraScale = { 1.0f, 1.0f, 1.0f };
 	Vector3 cameraRotate = { 0.26f, 0.0f, 0.0f };
 	Vector3 cameraTranslate = { 0.0f, 1.9f, -6.49f };
 	const int kWindowWidth = 1280;
@@ -27,9 +27,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		{0.5f, 0.5f, 0.5f}
 	};
 
-	Plane plane = {
-		{0.0f, 1.0f, 0.0f},
-		1.0f
+	Triangle triangle = {
+		{ {1.0f, 0.2f, 0.0f}, {-1.0f, 0.2f, 0.0f}, {0.0f, 0.8f, 0.0f} },
+		{0.0f, 0.0f, -1.0f}
 	};
 
 	// ウィンドウの×ボタンが押されるまでループ
@@ -50,7 +50,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		//========================================  ビュー関連  ===========================================
 		
 		// カメラ
-		Matrix4x4 cameraMatrix = MakeAffineMatrix(cameraPosition, cameraRotate, cameraTranslate);
+		Matrix4x4 cameraMatrix = MakeAffineMatrix(cameraScale, cameraRotate, cameraTranslate);
 		// ビュー
 		Matrix4x4 viewMatrix = Inverse(cameraMatrix);
 		// 透視投影
@@ -75,23 +75,30 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		DrawGrid(viewProjectionMatrix, viewportMatrix);
 		
 		// 線分の描画
-		if (IsCollisionSegment(segment, plane)) {
+		if (IsCollisionTriangle(triangle, segment)) {
 			DrawLineSegment(segment, viewProjectionMatrix, viewportMatrix, RED);
 		}else {
 			DrawLineSegment(segment, viewProjectionMatrix, viewportMatrix, WHITE);
 		}
-
-		// 平面の描画
-		DrawPlane(plane, viewProjectionMatrix, viewportMatrix, WHITE);
-
+		// 三角形の描画
+		DrawTriangle(triangle, viewProjectionMatrix, viewportMatrix, WHITE);
 
 		// ImGui
 		ImGui::Begin("Window");
-		ImGui::DragFloat3("Plane.Normal", &plane.normal.x, 0.01f);
-		plane.normal = Normalize(plane.normal);
-		ImGui::DragFloat("Plane.Distance", &plane.distance, 0.01f);
-		ImGui::DragFloat3("Segment.Origin", &segment.origin.x, 0.01f);
-		ImGui::DragFloat3("Segment.Diff", &segment.diff.x, 0.01f);
+		if (ImGui::CollapsingHeader("camera")) {
+			ImGui::DragFloat3("cameraScale", &cameraScale.x, 0.01f);
+			ImGui::DragFloat3("cameraRotate", &cameraRotate.x, 0.01f);
+			ImGui::DragFloat3("cameraTranslate", &cameraTranslate.x, 0.01f);
+		}
+		if (ImGui::CollapsingHeader("Triangle")) {
+			ImGui::DragFloat3("Triangle.v0", &triangle.vertices[0].x, 0.01f);
+			ImGui::DragFloat3("Triangle.v1", &triangle.vertices[1].x, 0.01f);
+			ImGui::DragFloat3("Triangle.v2", &triangle.vertices[2].x, 0.01f);
+		}
+		if (ImGui::CollapsingHeader("Segment")) {
+			ImGui::DragFloat3("Segment.Origin", &segment.origin.x, 0.01f);
+			ImGui::DragFloat3("Segment.Diff", &segment.diff.x, 0.01f);
+		}
 		ImGui::End();
 
 		///

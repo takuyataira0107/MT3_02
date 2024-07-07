@@ -29,6 +29,10 @@ struct Plane {
 	float distance;  //!< 距離
 };
 
+struct Triangle {
+	Vector3 vertices[3]; //!< 頂点
+	Vector3 normal;
+};
 
 //===========================================  表示  ==============================================
 
@@ -100,6 +104,16 @@ float DotFloat(const Vector3& vector, const float& a) {
 }
 //=================================================================================================
 
+//===========================================  距離  =============================================
+/*float Length(const Vector3& v1, const Vector3 v2) {
+	float result;
+	result = sqrtf(pow(v2.x - v1.x, 2) + pow(v2.y - v1.y, 2) + pow(v2.z - v1.z, 2));
+	return result;
+}*/
+
+//=================================================================================================
+
+
 //======================================  正射影ベクトル  =========================================
 Vector3 Project(const Vector3& v1, const Vector3& v2) {
 	Vector3 result;
@@ -121,8 +135,8 @@ Vector3 Perpendicular(const Vector3& vector) {
 //=========================================  最近接点  =============================================
 Vector3 ClosestPoint(const Vector3& point, const Segment& segment) {
 	Vector3 result;
-	Vector3 tb = Project(SubtractVector(point, segment.origin), segment.diff);
-	result = { segment.origin.x + tb.x, segment.origin.y + tb.y, segment.origin.z + tb.z };
+	Vector3 project = Project(SubtractVector(point, segment.origin), segment.diff);
+	result = { segment.origin.x + project.x, segment.origin.y + project.y, segment.origin.z + project.z };
 	return result;
 }
 //=================================================================================================
@@ -162,7 +176,7 @@ bool IsCollisionSegment(const Segment& segment, const Plane& plane) {
 
 	// 垂直=平行であるので、衝突しているはずがない
 	if (dot == 0.0f) {
-		//return false;
+		return false;
 	}
 
 	// tを求める
@@ -176,6 +190,37 @@ bool IsCollisionSegment(const Segment& segment, const Plane& plane) {
 		return false;
 	}
 }
+//=================================================================================================
+
+//====================================  線と三角形の衝突判定  ========================================
+
+bool IsCollisionTriangle(const Triangle& triangle, const Segment& segment) {
+
+
+	Vector3 v01 = { triangle.vertices[1].x - triangle.vertices[0].x, triangle.vertices[1].y - triangle.vertices[0].y, triangle.vertices[1].z - triangle.vertices[0].z };
+	Vector3 v12 = { triangle.vertices[2].x - triangle.vertices[1].x, triangle.vertices[2].y - triangle.vertices[1].y, triangle.vertices[2].z - triangle.vertices[1].z };
+	Vector3 v20 = { triangle.vertices[0].x - triangle.vertices[2].x, triangle.vertices[0].y - triangle.vertices[2].y, triangle.vertices[0].z - triangle.vertices[2].z };
+
+
+	Vector3 v0p = { (segment.origin.x + segment.diff.x) - triangle.vertices[0].x, (segment.origin.y + segment.diff.y) - triangle.vertices[0].y, (segment.origin.z + segment.diff.z) - triangle.vertices[0].z };
+	Vector3 v1p = { (segment.origin.x + segment.diff.x) - triangle.vertices[1].x, (segment.origin.y + segment.diff.y) - triangle.vertices[1].y, (segment.origin.z + segment.diff.z) - triangle.vertices[1].z };
+	Vector3 v2p = { (segment.origin.x + segment.diff.x) - triangle.vertices[2].x, (segment.origin.y + segment.diff.y) - triangle.vertices[2].y, (segment.origin.z + segment.diff.z) - triangle.vertices[2].z };
+
+	// 各辺を結んだベクトルと、頂点と衝突点pを結んだベクトルのクロス積を取る
+	Vector3 cross01 = Cross(v01, v1p);
+	Vector3 cross12 = Cross(v12, v2p);
+	Vector3 cross20 = Cross(v20, v0p);
+
+	if (Dot(cross01, triangle.normal) >= 0.0f &&
+		Dot(cross12, triangle.normal) >= 0.0f &&
+		Dot(cross20, triangle.normal) >= 0.0f) {
+		return true;
+	}else {
+		return false;
+	}
+
+}
+
 //=================================================================================================
 
 
@@ -279,7 +324,7 @@ void DrawLineSegment(const Segment& segment, const Matrix4x4& viewProjectionMatr
 }
 //=================================================================================================
 
-//=========================================  平面描画  =============================================
+//========================================  平面の描画  ============================================
 void DrawPlane(const Plane& plane, const Matrix4x4& viewProjectionMatrix, const Matrix4x4& viewportMatrix, uint32_t color) {
 	Vector3 center = MultiplyVector(plane.distance, plane.normal);  // 1
 	Vector3 perpendiculars[4];
@@ -289,7 +334,7 @@ void DrawPlane(const Plane& plane, const Matrix4x4& viewProjectionMatrix, const 
 	perpendiculars[3] = { -perpendiculars[2].x, -perpendiculars[2].y, -perpendiculars[2].z };  // 5
 	// 6
 	Vector3 points[4];
-	for (int32_t index = 0; index < 4; ++index) {
+	for (uint32_t index = 0; index < 4; ++index) {
 		Vector3 extend = MultiplyVector(2.0f, perpendiculars[index]);
 		Vector3 point = AddVector(center, extend);
 		points[index] = Transform(Transform(point, viewProjectionMatrix), viewportMatrix);
@@ -300,4 +345,22 @@ void DrawPlane(const Plane& plane, const Matrix4x4& viewProjectionMatrix, const 
 	Novice::DrawLine(int(points[2].x), int(points[2].y), int(points[1].x), int(points[1].y), color);
 	Novice::DrawLine(int(points[3].x), int(points[3].y), int(points[1].x), int(points[1].y), color);
 }
+//=================================================================================================
+
+//=======================================  三角形の描画  ============================================
+
+void DrawTriangle(const Triangle& triangle, const Matrix4x4& viewProjectionMatrix, const Matrix4x4& viewportMatrix, uint32_t color) {
+	Vector3 screenVertices[3];
+	for (uint32_t index = 0; index < 3; ++index) {
+		screenVertices[index] = Transform(Transform(triangle.vertices[index], viewProjectionMatrix), viewportMatrix);
+	}
+	Novice::DrawTriangle(
+		int(screenVertices[0].x), int(screenVertices[0].y), 
+		int(screenVertices[1].x), int(screenVertices[1].y), 
+		int(screenVertices[2].x), int(screenVertices[2].y), 
+		color, 
+		kFillModeWireFrame
+	);
+}
+
 //=================================================================================================
