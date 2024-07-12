@@ -34,6 +34,11 @@ struct Triangle {
 	Vector3 normal;
 };
 
+struct AABB {
+	Vector3 min;
+	Vector3 max;
+};
+
 //===========================================  表示  ==============================================
 
 static const int kRowHeight = 20;
@@ -226,6 +231,19 @@ bool IsCollisionTriangle(const Triangle& triangle, const Segment& segment) {
 
 //=================================================================================================
 
+//======================================  AABBの衝突判定  ==========================================
+
+bool isCollisionAABB(const AABB& a, const AABB& b) {
+	if ((a.min.x <= b.max.x && a.max.x >= b.min.x) && // x軸
+		(a.min.y <= b.max.y && a.max.y >= b.min.y) && // y軸
+		(a.min.z <= b.max.z && a.max.z >= b.min.z)) { // z軸
+		return true;
+	}
+
+	return false;
+}
+//=================================================================================================
+
 
 //=========================================  グリッド  =============================================
 void DrawGrid(const Matrix4x4& viewProjectionMatrix, const Matrix4x4& viewportMatrix)
@@ -367,3 +385,58 @@ void DrawTriangle(const Triangle& triangle, const Matrix4x4& viewProjectionMatri
 }
 
 //=================================================================================================
+
+
+void DrawAABB(const AABB& aabb, const Matrix4x4& viewProjectionMatrix, const Matrix4x4& viewportMatrix, uint32_t color) {
+	Vector3 square1[4];
+	square1[0] = { aabb.min.x, aabb.min.y, aabb.min.z };
+	square1[1] = { aabb.min.x, aabb.min.y, aabb.max.z };
+	square1[2] = { aabb.max.x, aabb.min.y, aabb.max.z };
+	square1[3] = { aabb.max.x, aabb.min.y, aabb.min.z };
+	Vector3 square2[4];
+	square2[0] = { aabb.min.x, aabb.max.y, aabb.min.z };
+	square2[1] = { aabb.min.x, aabb.max.y, aabb.max.z };
+	square2[2] = { aabb.max.x, aabb.max.y, aabb.max.z };
+	square2[3] = { aabb.max.x, aabb.max.y, aabb.min.z };
+	
+	Vector3 screenSquare1[4];
+	Vector3 screenSquare2[4];
+	for (uint32_t index = 0; index < 4; ++index) {
+		screenSquare1[index] = Transform(Transform(square1[index], viewProjectionMatrix), viewportMatrix);
+		screenSquare2[index] = Transform(Transform(square2[index], viewProjectionMatrix), viewportMatrix);
+	}
+
+	for (uint32_t index = 0; index < 4; ++index) {
+		Novice::DrawLine(int(screenSquare1[index].x), int(screenSquare1[index].y), int(screenSquare2[index].x), int(screenSquare2[index].y), color);
+	}
+
+	Novice::DrawLine(int(screenSquare1[1].x), int(screenSquare1[1].y), int(screenSquare2[1].x), int(screenSquare2[1].y), color);
+	Novice::DrawLine(int(screenSquare1[0].x), int(screenSquare1[0].y), int(screenSquare1[1].x), int(screenSquare1[1].y), color);
+	Novice::DrawLine(int(screenSquare2[0].x), int(screenSquare2[0].y), int(screenSquare2[1].x), int(screenSquare2[1].y), color);
+
+	/*
+	Novice::DrawLine(int(screenSquare1[1].x), int(screenSquare1[1].y), int(screenSquare2[1].x), int(screenSquare2[1].y), color);
+	Novice::DrawLine(int(screenSquare1[0].x), int(screenSquare1[0].y), int(screenSquare1[1].x), int(screenSquare1[1].y), color);
+	Novice::DrawLine(int(screenSquare2[0].x), int(screenSquare2[0].y), int(screenSquare2[1].x), int(screenSquare2[1].y), color);
+
+	Novice::DrawLine(int(screenSquare1[0].x), int(screenSquare1[0].y), int(screenSquare2[0].x), int(screenSquare2[0].y), color);
+	Novice::DrawLine(int(screenSquare1[1].x), int(screenSquare1[1].y), int(screenSquare2[1].x), int(screenSquare2[1].y), color);
+	Novice::DrawLine(int(screenSquare1[0].x), int(screenSquare1[0].y), int(screenSquare1[1].x), int(screenSquare1[1].y), color);
+	Novice::DrawLine(int(screenSquare2[0].x), int(screenSquare2[0].y), int(screenSquare2[1].x), int(screenSquare2[1].y), color);
+
+	Novice::DrawLine(int(screenSquare1[0].x), int(screenSquare1[0].y), int(screenSquare2[0].x), int(screenSquare2[0].y), color);
+	Novice::DrawLine(int(screenSquare1[1].x), int(screenSquare1[1].y), int(screenSquare2[1].x), int(screenSquare2[1].y), color);
+	Novice::DrawLine(int(screenSquare1[0].x), int(screenSquare1[0].y), int(screenSquare1[1].x), int(screenSquare1[1].y), color);
+	Novice::DrawLine(int(screenSquare2[0].x), int(screenSquare2[0].y), int(screenSquare2[1].x), int(screenSquare2[1].y), color);
+/*
+	Novice::DrawLine(int(), int(), int(), int(), color);
+	Novice::DrawLine(int(), int(), int(), int(), color);
+	Novice::DrawLine(int(), int(), int(), int(), color);
+	Novice::DrawLine(int(), int(), int(), int(), color);
+	Novice::DrawLine(int(), int(), int(), int(), color);
+	Novice::DrawLine(int(), int(), int(), int(), color);
+	Novice::DrawLine(int(), int(), int(), int(), color);
+	Novice::DrawLine(int(), int(), int(), int(), color);
+	Novice::DrawLine(int(), int(), int(), int(), color);
+	*/
+	}
