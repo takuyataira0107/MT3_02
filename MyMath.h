@@ -32,6 +32,7 @@ struct Plane {
 struct Triangle {
 	Vector3 vertices[3]; //!< 頂点
 	Vector3 normal;
+	float distance;
 };
 
 //===========================================  表示  ==============================================
@@ -195,26 +196,35 @@ bool IsCollisionSegment(const Segment& segment, const Plane& plane) {
 //====================================  線と三角形の衝突判定  ========================================
 
 bool IsCollisionTriangle(const Triangle& triangle, const Segment& segment) {
-
+	
 
 	Vector3 v01 = { triangle.vertices[1].x - triangle.vertices[0].x, triangle.vertices[1].y - triangle.vertices[0].y, triangle.vertices[1].z - triangle.vertices[0].z };
 	Vector3 v12 = { triangle.vertices[2].x - triangle.vertices[1].x, triangle.vertices[2].y - triangle.vertices[1].y, triangle.vertices[2].z - triangle.vertices[1].z };
 	Vector3 v20 = { triangle.vertices[0].x - triangle.vertices[2].x, triangle.vertices[0].y - triangle.vertices[2].y, triangle.vertices[0].z - triangle.vertices[2].z };
 
-
-	Vector3 v0p = { (segment.origin.x + segment.diff.x) - triangle.vertices[0].x, (segment.origin.y + segment.diff.y) - triangle.vertices[0].y, (segment.origin.z + segment.diff.z) - triangle.vertices[0].z };
-	Vector3 v1p = { (segment.origin.x + segment.diff.x) - triangle.vertices[1].x, (segment.origin.y + segment.diff.y) - triangle.vertices[1].y, (segment.origin.z + segment.diff.z) - triangle.vertices[1].z };
-	Vector3 v2p = { (segment.origin.x + segment.diff.x) - triangle.vertices[2].x, (segment.origin.y + segment.diff.y) - triangle.vertices[2].y, (segment.origin.z + segment.diff.z) - triangle.vertices[2].z };
+	Vector3 v0p = { (segment.origin.x) - triangle.vertices[0].x, (segment.origin.y) - triangle.vertices[0].y, (segment.origin.z) - triangle.vertices[0].z };
+	Vector3 v1p = { (segment.origin.x) - triangle.vertices[1].x, (segment.origin.y) - triangle.vertices[1].y, (segment.origin.z) - triangle.vertices[1].z };
+	Vector3 v2p = { (segment.origin.x) - triangle.vertices[2].x, (segment.origin.y) - triangle.vertices[2].y, (segment.origin.z) - triangle.vertices[2].z };
 
 	// 各辺を結んだベクトルと、頂点と衝突点pを結んだベクトルのクロス積を取る
 	Vector3 cross01 = Cross(v01, v1p);
 	Vector3 cross12 = Cross(v12, v2p);
 	Vector3 cross20 = Cross(v20, v0p);
+	
+	float dot = Dot(triangle.normal, segment.diff);
+	if (dot == 0.0f) {
+		return false;
+	}
+	float t = (triangle.distance, Dot(segment.origin, triangle.normal)) / dot;
 
-	if (Dot(cross01, triangle.normal) >= 0.0f &&
-		Dot(cross12, triangle.normal) >= 0.0f &&
-		Dot(cross20, triangle.normal) >= 0.0f) {
-		return true;
+	if(t >= 0 && t <= 1){
+		if (Dot(cross01, triangle.normal) >= 0.0f &&
+			Dot(cross12, triangle.normal) >= 0.0f &&
+			Dot(cross20, triangle.normal) >= 0.0f) {
+			return true;
+		}else {
+			return false;
+		}
 	}else {
 		return false;
 	}

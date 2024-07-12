@@ -28,8 +28,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	};
 
 	Triangle triangle = {
-		{ {1.0f, 0.2f, 0.0f}, {-1.0f, 0.2f, 0.0f}, {0.0f, 0.8f, 0.0f} },
-		{0.0f, 0.0f, -1.0f}
+		{ {0.0f, 0.8f, 0.0f}, {1.0f, 0.2f, 0.0f}, {-1.0f, 0.2f, 0.0f} },
+		{ 0.0f, 0.0f, -1.0f },
+		1.0f
 	};
 
 	// ウィンドウの×ボタンが押されるまでループ
