@@ -232,7 +232,6 @@ bool IsCollisionTriangle(const Triangle& triangle, const Segment& segment) {
 //=================================================================================================
 
 //======================================  AABBの衝突判定  ==========================================
-
 bool isCollisionAABB(const AABB& a, const AABB& b) {
 	if ((a.min.x <= b.max.x && a.max.x >= b.min.x) && // x軸
 		(a.min.y <= b.max.y && a.max.y >= b.min.y) && // y軸
@@ -386,7 +385,7 @@ void DrawTriangle(const Triangle& triangle, const Matrix4x4& viewProjectionMatri
 
 //=================================================================================================
 
-
+//========================================  aabbの描画  =============================================
 void DrawAABB(const AABB& aabb, const Matrix4x4& viewProjectionMatrix, const Matrix4x4& viewportMatrix, uint32_t color) {
 	Vector3 square1[4];
 	square1[0] = { aabb.min.x, aabb.min.y, aabb.min.z };
@@ -406,37 +405,17 @@ void DrawAABB(const AABB& aabb, const Matrix4x4& viewProjectionMatrix, const Mat
 		screenSquare2[index] = Transform(Transform(square2[index], viewProjectionMatrix), viewportMatrix);
 	}
 
+	// 描画
 	for (uint32_t index = 0; index < 4; ++index) {
 		Novice::DrawLine(int(screenSquare1[index].x), int(screenSquare1[index].y), int(screenSquare2[index].x), int(screenSquare2[index].y), color);
 	}
-
-	Novice::DrawLine(int(screenSquare1[1].x), int(screenSquare1[1].y), int(screenSquare2[1].x), int(screenSquare2[1].y), color);
 	Novice::DrawLine(int(screenSquare1[0].x), int(screenSquare1[0].y), int(screenSquare1[1].x), int(screenSquare1[1].y), color);
 	Novice::DrawLine(int(screenSquare2[0].x), int(screenSquare2[0].y), int(screenSquare2[1].x), int(screenSquare2[1].y), color);
-
-	/*
-	Novice::DrawLine(int(screenSquare1[1].x), int(screenSquare1[1].y), int(screenSquare2[1].x), int(screenSquare2[1].y), color);
-	Novice::DrawLine(int(screenSquare1[0].x), int(screenSquare1[0].y), int(screenSquare1[1].x), int(screenSquare1[1].y), color);
-	Novice::DrawLine(int(screenSquare2[0].x), int(screenSquare2[0].y), int(screenSquare2[1].x), int(screenSquare2[1].y), color);
-
-	Novice::DrawLine(int(screenSquare1[0].x), int(screenSquare1[0].y), int(screenSquare2[0].x), int(screenSquare2[0].y), color);
-	Novice::DrawLine(int(screenSquare1[1].x), int(screenSquare1[1].y), int(screenSquare2[1].x), int(screenSquare2[1].y), color);
-	Novice::DrawLine(int(screenSquare1[0].x), int(screenSquare1[0].y), int(screenSquare1[1].x), int(screenSquare1[1].y), color);
-	Novice::DrawLine(int(screenSquare2[0].x), int(screenSquare2[0].y), int(screenSquare2[1].x), int(screenSquare2[1].y), color);
-
-	Novice::DrawLine(int(screenSquare1[0].x), int(screenSquare1[0].y), int(screenSquare2[0].x), int(screenSquare2[0].y), color);
-	Novice::DrawLine(int(screenSquare1[1].x), int(screenSquare1[1].y), int(screenSquare2[1].x), int(screenSquare2[1].y), color);
-	Novice::DrawLine(int(screenSquare1[0].x), int(screenSquare1[0].y), int(screenSquare1[1].x), int(screenSquare1[1].y), color);
-	Novice::DrawLine(int(screenSquare2[0].x), int(screenSquare2[0].y), int(screenSquare2[1].x), int(screenSquare2[1].y), color);
-/*
-	Novice::DrawLine(int(), int(), int(), int(), color);
-	Novice::DrawLine(int(), int(), int(), int(), color);
-	Novice::DrawLine(int(), int(), int(), int(), color);
-	Novice::DrawLine(int(), int(), int(), int(), color);
-	Novice::DrawLine(int(), int(), int(), int(), color);
-	Novice::DrawLine(int(), int(), int(), int(), color);
-	Novice::DrawLine(int(), int(), int(), int(), color);
-	Novice::DrawLine(int(), int(), int(), int(), color);
-	Novice::DrawLine(int(), int(), int(), int(), color);
-	*/
-	}
+	Novice::DrawLine(int(screenSquare1[0].x), int(screenSquare1[0].y), int(screenSquare1[3].x), int(screenSquare1[3].y), color);
+	Novice::DrawLine(int(screenSquare2[0].x), int(screenSquare2[0].y), int(screenSquare2[3].x), int(screenSquare2[3].y), color);
+	Novice::DrawLine(int(screenSquare1[2].x), int(screenSquare1[2].y), int(screenSquare1[3].x), int(screenSquare1[3].y), color);
+	Novice::DrawLine(int(screenSquare2[2].x), int(screenSquare2[2].y), int(screenSquare2[3].x), int(screenSquare2[3].y), color);
+	Novice::DrawLine(int(screenSquare1[1].x), int(screenSquare1[1].y), int(screenSquare1[2].x), int(screenSquare1[2].y), color);
+	Novice::DrawLine(int(screenSquare2[1].x), int(screenSquare2[1].y), int(screenSquare2[2].x), int(screenSquare2[2].y), color);
+}
+//=================================================================================================
