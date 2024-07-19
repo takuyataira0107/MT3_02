@@ -225,7 +225,6 @@ bool IsCollisionTriangle(const Triangle& triangle, const Segment& segment) {
 	Vector3 cross12 = Cross(v12, v2p);
 	Vector3 cross20 = Cross(v20, v0p);
 
-
 	if(t >= 0 && t <= 1){
 		if (Dot(cross01, plane.normal) >= 0.0f &&
 			Dot(cross12, plane.normal) >= 0.0f &&
