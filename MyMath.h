@@ -2,6 +2,7 @@
 #include "MakeMatrix.h"
 #include <Novice.h>
 #include <numbers>
+#include <algorithm>
 
 
 struct Sphere {
@@ -110,12 +111,11 @@ float DotFloat(const Vector3& vector, const float& a) {
 //=================================================================================================
 
 //===========================================  距離  =============================================
-/*float Length(const Vector3& v1, const Vector3 v2) {
+float Length(const Vector3& vector) {
 	float result;
-	result = sqrtf(pow(v2.x - v1.x, 2) + pow(v2.y - v1.y, 2) + pow(v2.z - v1.z, 2));
+	result = std::sqrtf(vector.x * vector.x + vector.y * vector.y + vector.z * vector.z);
 	return result;
-}*/
-
+}
 //=================================================================================================
 
 
@@ -258,6 +258,28 @@ bool isCollisionAABB(const AABB& a, const AABB& b) {
 		return true;
 	}
 
+	return false;
+}
+//=================================================================================================
+
+//==================================  スフィアとAABBの衝突判定  ======================================
+bool isCollisionSphereAABB(const AABB& aabb, const Sphere& sphere) {
+	Vector3 closestPoint{ 
+		std::clamp(sphere.center.x, aabb.min.x, aabb.max.x), 
+		std::clamp(sphere.center.y, aabb.min.y, aabb.max.y), 
+		std::clamp(sphere.center.z, aabb.min.z, aabb.max.z)
+	};
+	// 細菌接点と球の中心との距離を求める
+	Vector3 length = {
+		closestPoint.x - sphere.center.x,
+		closestPoint.y - sphere.center.y,
+		closestPoint.z - sphere.center.z,
+	};
+	float distance = Length(length);
+	// 距離が半径よりも小さければ衝突
+	if (distance <= sphere.radius) {
+		return true;
+	}
 	return false;
 }
 //=================================================================================================

@@ -22,16 +22,15 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	const int kWindowWidth = 1280;
 	const int kWindowHeight = 720;
 
-	AABB aabb1{
+	Sphere sphere = {
+		{0.0f, 0.2f, 0.1f},
+		0.5f
+	};
+
+	AABB aabb{
 		.min{-0.5f, -0.5f, -0.5f},
 		.max{0.0f, 0.0f, 0.0f}
 	};
-
-	AABB aabb2{
-		.min{0.2f, 0.2f, 0.2f},
-		.max{1.0f, 1.0f, 1.0f}
-	};
-
 
 	// ウィンドウの×ボタンが押されるまでループ
 	while (Novice::ProcessMessage() == 0) {
@@ -46,10 +45,10 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		/// ↓更新処理ここから
 		///
 		/// 
-		
+
 
 		//========================================  ビュー関連  ===========================================
-		
+
 		// カメラ
 		Matrix4x4 cameraMatrix = MakeAffineMatrix(cameraScale, cameraRotate, cameraTranslate);
 		// ビュー
@@ -62,19 +61,12 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 		//=================================================================================================
 
-		aabb1.min.x = (std::min)(aabb1.min.x, aabb1.max.x);
-		aabb1.min.y = (std::min)(aabb1.min.y, aabb1.max.y);
-		aabb1.min.z = (std::min)(aabb1.min.z, aabb1.max.z);
-		aabb1.max.x = (std::max)(aabb1.min.x, aabb1.max.x);
-		aabb1.max.y = (std::max)(aabb1.min.y, aabb1.max.y);
-		aabb1.max.z = (std::max)(aabb1.min.z, aabb1.max.z);
-
-		aabb2.min.x = (std::min)(aabb2.min.x, aabb2.max.x);
-		aabb2.min.y = (std::min)(aabb2.min.y, aabb2.max.y);
-		aabb2.min.z = (std::min)(aabb2.min.z, aabb2.max.z);
-		aabb2.max.x = (std::max)(aabb2.min.x, aabb2.max.x);
-		aabb2.max.y = (std::max)(aabb2.min.y, aabb2.max.y);
-		aabb2.max.z = (std::max)(aabb2.min.z, aabb2.max.z);
+		aabb.min.x = (std::min)(aabb.min.x, aabb.max.x);
+		aabb.min.y = (std::min)(aabb.min.y, aabb.max.y);
+		aabb.min.z = (std::min)(aabb.min.z, aabb.max.z);
+		aabb.max.x = (std::max)(aabb.min.x, aabb.max.x);
+		aabb.max.y = (std::max)(aabb.min.y, aabb.max.y);
+		aabb.max.z = (std::max)(aabb.min.z, aabb.max.z);
 
 		///
 		/// ↑更新処理ここまで
@@ -84,6 +76,19 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		/// ↓描画処理ここから
 		///
 
+
+		// グリッド線の描画
+		DrawGrid(viewProjectionMatrix, viewportMatrix);
+
+		// スフィアの描画
+		if (isCollisionSphereAABB(aabb, sphere)) {
+			DrawSphere(sphere, viewProjectionMatrix, viewportMatrix, RED);
+		}else {
+			DrawSphere(sphere, viewProjectionMatrix, viewportMatrix, WHITE);
+		}
+		// AABBの描画
+		DrawAABB(aabb, viewProjectionMatrix, viewportMatrix, WHITE);
+
 		// ImGui
 		ImGui::Begin("Window");
 		if (ImGui::CollapsingHeader("camera")) {
@@ -91,23 +96,15 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			ImGui::DragFloat3("cameraRotate", &cameraRotate.x, 0.01f);
 			ImGui::DragFloat3("cameraTranslate", &cameraTranslate.x, 0.01f);
 		}
+		if (ImGui::CollapsingHeader("sphere")) {
+			ImGui::DragFloat3("Sphere.Center", &sphere.center.x, 0.01f);
+			ImGui::DragFloat("Sphere.Radius", &sphere.radius, 0.01f);
+		}
 		if (ImGui::CollapsingHeader("aabb")) {
-			ImGui::DragFloat3("aabb1.min", &aabb1.min.x, 0.01f);
-			ImGui::DragFloat3("aabb1.max", &aabb1.max.x, 0.01f);
-			ImGui::DragFloat3("aabb2.min", &aabb2.min.x, 0.01f);
-			ImGui::DragFloat3("aabb2.max", &aabb2.max.x, 0.01f);
+			ImGui::DragFloat3("aabb.min", &aabb.min.x, 0.01f);
+			ImGui::DragFloat3("aabb.max", &aabb.max.x, 0.01f);
 		}
 		ImGui::End();
-
-
-		// グリッド線の描画
-		DrawGrid(viewProjectionMatrix, viewportMatrix);
-		if (isCollisionAABB(aabb1, aabb2)) {
-			DrawAABB(aabb1, viewProjectionMatrix, viewportMatrix, RED);
-		}else {
-			DrawAABB(aabb1, viewProjectionMatrix, viewportMatrix, WHITE);
-		}
-		DrawAABB(aabb2, viewProjectionMatrix, viewportMatrix, WHITE);
 
 		///
 		/// ↑描画処理ここまで
