@@ -22,14 +22,14 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	const int kWindowWidth = 1280;
 	const int kWindowHeight = 720;
 
-	Sphere sphere = {
-		{0.0f, 0.2f, 0.1f},
-		0.5f
-	};
 
 	AABB aabb{
 		.min{-0.5f, -0.5f, -0.5f},
-		.max{0.0f, 0.0f, 0.0f}
+		.max{0.5f, 0.5f, 0.5f}
+	};
+	Segment segment{
+		.origin{-0.7f, 0.3f, 0.0f},
+		.diff{2.0f, -0.5f, 0.0f}
 	};
 
 	// ウィンドウの×ボタンが押されるまでループ
@@ -80,14 +80,15 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		// グリッド線の描画
 		DrawGrid(viewProjectionMatrix, viewportMatrix);
 
-		// スフィアの描画
-		if (isCollisionSphereAABB(aabb, sphere)) {
-			DrawSphere(sphere, viewProjectionMatrix, viewportMatrix, RED);
-		}else {
-			DrawSphere(sphere, viewProjectionMatrix, viewportMatrix, WHITE);
-		}
+		// segmentの描画
+		DrawLineSegment(segment, viewProjectionMatrix, viewportMatrix, WHITE);
+		
 		// AABBの描画
-		DrawAABB(aabb, viewProjectionMatrix, viewportMatrix, WHITE);
+		if (IsCollisionAABBSeg(aabb, segment)) {
+			DrawAABB(aabb, viewProjectionMatrix, viewportMatrix, RED);
+		} else {
+			DrawAABB(aabb, viewProjectionMatrix, viewportMatrix, WHITE);
+		}
 
 		// ImGui
 		ImGui::Begin("Window");
@@ -96,9 +97,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			ImGui::DragFloat3("cameraRotate", &cameraRotate.x, 0.01f);
 			ImGui::DragFloat3("cameraTranslate", &cameraTranslate.x, 0.01f);
 		}
-		if (ImGui::CollapsingHeader("sphere")) {
-			ImGui::DragFloat3("Sphere.Center", &sphere.center.x, 0.01f);
-			ImGui::DragFloat("Sphere.Radius", &sphere.radius, 0.01f);
+		if (ImGui::CollapsingHeader("Segment")) {
+			ImGui::DragFloat3("Segment.Origin", &segment.origin.x, 0.01f);
+			ImGui::DragFloat3("Segment.Diff", &segment.diff.x, 0.01f);
 		}
 		if (ImGui::CollapsingHeader("aabb")) {
 			ImGui::DragFloat3("aabb.min", &aabb.min.x, 0.01f);

@@ -284,6 +284,35 @@ bool isCollisionSphereAABB(const AABB& aabb, const Sphere& sphere) {
 }
 //=================================================================================================
 
+//====================================  AABBと線分の衝突判定  =======================~~===============
+bool IsCollisionAABBSeg(const AABB& aabb, const Segment& segment) {
+//	float dot = Dot(plane.normal, segment.diff);
+	float tXmin = (aabb.min.x - segment.origin.x) / segment.diff.x;
+	float tXmax = (aabb.max.x - segment.origin.x) / segment.diff.x;
+	float tYmin = (aabb.min.y - segment.origin.y) / segment.diff.y;
+	float tYmax = (aabb.max.y - segment.origin.y) / segment.diff.y;
+	float tZmin = (aabb.min.z - segment.origin.z) / segment.diff.z;
+	float tZmax = (aabb.max.z - segment.origin.z) / segment.diff.z;
+
+	float tNearX = min(tXmin, tXmax);
+	float tNearY = min(tYmin, tYmax);
+	float tNearZ = min(tZmin, tZmax);
+	float tFarX = max(tXmin, tXmax);
+	float tFarY = max(tYmin, tYmax);
+	float tFarZ = max(tZmin, tZmax);
+
+	// AABBとの衝突点（貫通点）のtが小さい方
+	float tmin = max(max(tNearX, tNearY), tNearZ);
+	// AABBとの衝突点（貫通点）のtが大きい方
+	float tmax = min(min(tFarX, tFarY), tFarZ);
+	if (tmin <= tmax) {
+		return true;
+	}
+	return false;
+}
+
+//=================================================================================================
+
 
 //=========================================  グリッド  =============================================
 void DrawGrid(const Matrix4x4& viewProjectionMatrix, const Matrix4x4& viewportMatrix)
